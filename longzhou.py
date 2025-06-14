@@ -14,7 +14,7 @@ from pynput.mouse import Button, Controller as MouseController
 
 import numpy as np
 
-Y1, Y2, X1, X2 = 200, 400, 830, 1090	# 这组参数适配1920×1080尺寸的屏幕
+Y1, Y2, X1, X2 = 230, 330, 850, 1070	# 这组参数适配1920×1080
 
 color_to_key = {'y': 'd', 'r': 'f', 'b': 'j', 'g': 'k'}
 
@@ -28,16 +28,18 @@ def easy_show(image: numpy.ndarray, window_title: str="image") -> None:
 
 def get_screenshot():
 	image = pyautogui.screenshot()
+	image.save(f"./temp/sc.png")
 	image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
 	return image
 
 def load_labels():
 	labels = dict()
 	for color in "yrbg":
-		for n in "12":
+		for n in "012":
 			image = Image.open(f"./temp/{color}{n}.png")
 			image = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
 			clipped_image = image[Y1: Y2, X1: X2, :]
+			# jfeasy_show(clipped_image)
 			labels[f"{color}{n}"] = clipped_image
 	return labels
 
@@ -61,12 +63,23 @@ def run():
 		color = predicted_label[0]
 		key_char = color_to_key[color]
 		n = int(predicted_label[1])
-		for _ in range(n):
-			keyboard_controller.press(key_char)
-			time.sleep(.05)
-			keyboard_controller.release(key_char)
-			time.sleep(.05)
-		time.sleep(.1)
+		if n == 0:
+			# 禁止旗
+			for key_char_rep in "dfjk":
+				if key_char_rep != key_char:
+					keyboard_controller.press(key_char_rep)
+					time.sleep(.05)
+					keyboard_controller.release(key_char_rep)
+					time.sleep(.05)
+					break
+		else:
+			for _ in range(n):
+				keyboard_controller.press(key_char)
+				time.sleep(.05)
+				keyboard_controller.release(key_char)
+				time.sleep(.05)
+		time.sleep(.15)
 	
 time.sleep(2)
 run()
+# get_screenshot()
